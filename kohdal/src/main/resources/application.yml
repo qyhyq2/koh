@@ -1,0 +1,15 @@
+
+spring:
+  profiles:
+    active: @env@
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate.ddl-auto: update
+  database:
+    driverClassName: org.postgresql.Driver
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/test
+    username: root
+    password: root
