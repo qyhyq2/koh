@@ -1,0 +1,26 @@
+#zk:
+#  address: 114.55.88.188:2181,114.55.88.188:2182,114.55.88.188:2183
+
+#服务名
+dubbo:
+  application:
+    name: kohService
+  #注册的组
+  registry:
+    protocol: zookeeper
+    #zookeeper地址
+    address: 192.168.171.36:2181
+  annotation:
+    package: com.koh
+  provider:
+    delay: -1
+    timeout: 5000
+    retries: 0
+    threads: 300
+    dispatcher: message
+    cluster: failover
+    filter: -validation
+  protocol:
+    name: thrift
+    port: 9090
+

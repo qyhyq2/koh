@@ -1,7 +1,7 @@
 package com.koh.thrift;
 
+import com.alibaba.dubbo.config.annotation.Service;
 import org.apache.thrift.TException;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by qianyuhang on 2018/5/2.
