@@ -7,9 +7,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -20,8 +18,12 @@ import org.apache.thrift.transport.TTransport;
 import java.lang.reflect.Constructor;
 
 public class Thrift2Protocol extends AbstractProxyProtocol {
-    public static final int DEFAULT_PORT = 9090;
+    private static final String iFace = "$Iface";
+    private static final String client = "$Client";
+    private static final String processor = "$Processor";
+    public static final int DEFAULT_PORT = 30880;
     private static final Logger logger = LoggerFactory.getLogger(Thrift2Protocol.class);
+    private TSocket tSocket;
 
     @Override
     public int getDefaultPort() {
@@ -38,8 +40,6 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
 
         TProcessor tprocessor;
         TThreadedSelectorServer.Args tArgs = null;
-        String iFace = "$Iface";
-        String processor = "$Processor";
         String typeName = type.getName();
         TNonblockingServerSocket transport;
         if (typeName.endsWith(iFace)) {
@@ -96,15 +96,14 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
             TTransport transport;
             TProtocol protocol;
             T thriftClient = null;
-            String iFace = "$Iface";
-            String client = "$Client";
 
             String typeName = type.getName();
             if (typeName.endsWith(iFace)) {
                 String clientClsName = typeName.substring(0, typeName.indexOf(iFace)) + client;
                 Class<?> clazz = Class.forName(clientClsName);
                 Constructor constructor = clazz.getConstructor(TProtocol.class);
-                try (TSocket tSocket = new TSocket(url.getHost(), url.getPort())) {
+                try {
+                    tSocket = new TSocket(url.getHost(), url.getPort());
                     transport = new TFramedTransport(tSocket);
                     protocol = new TBinaryProtocol(transport);
                     thriftClient = (T) constructor.newInstance(protocol);
@@ -122,4 +121,9 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
         }
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        tSocket.close();
+    }
 }
