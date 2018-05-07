@@ -1,5 +1,6 @@
 package com.koh.thrift.support;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -54,6 +55,9 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                     tArgs.processor(tprocessor);
                     tArgs.transportFactory(new TFramedTransport.Factory());
                     tArgs.protocolFactory(new TBinaryProtocol.Factory());
+                    tArgs.selectorThreads(Runtime.getRuntime().availableProcessors());
+                    tArgs.workerThreads(url.getParameter(Constants.THREADS_KEY, 100));
+                    tArgs.acceptPolicy(TThreadedSelectorServer.Args.AcceptPolicy.FAIR_ACCEPT);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                     throw new RpcException("Fail to create thrift server(" + url + ") : " + e.getMessage(), e);
