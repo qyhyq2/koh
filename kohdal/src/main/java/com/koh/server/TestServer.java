@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
 @Service
 public class TestServer {
 
-    @Autowired
+//    @Autowired
     private TestService.Iface testService;
 
     @PostConstruct

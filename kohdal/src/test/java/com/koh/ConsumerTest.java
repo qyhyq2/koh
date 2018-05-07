@@ -17,7 +17,7 @@ public class ConsumerTest extends AbstractServiceTest {
 
     @Test
     public void test() throws Exception {
-        testService.getById((byte) 1);
+        System.out.println(testService.getById((byte) 1).name);
     }
 
 }
