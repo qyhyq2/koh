@@ -22,25 +22,13 @@ public class ConsumerTest extends AbstractServiceTest {
 
     @Test
     public void test() throws Exception {
-        System.out.println("dubbo RPC testing => ");
-
-        int max = 50000;
-        long start = System.currentTimeMillis();
-
-        for (int i = 0; i < max; i++) {
-            testService.getById((byte) 1);
-        }
-
-        long end = System.currentTimeMillis();
-        long elapsedMilliseconds = end - start;
-
-        System.out.println(String.format("%d次RPC调用(dubbo协议),共耗时%d毫秒,平均%f/秒", max, elapsedMilliseconds, max / (elapsedMilliseconds / 1000.0F)));
+        System.out.println(testService.getById((byte) 1).name);
     }
 
 
     @Test
     public void testPerm() throws Exception {
-        int max = 5000;
+        int max = 10;
         System.out.println("dubbo RPC testing => ");
         ExecutorService threadPool = Executors.newFixedThreadPool(50);
         CountDownLatch latch = new CountDownLatch(max);
@@ -63,7 +51,7 @@ public class ConsumerTest extends AbstractServiceTest {
         long end = System.currentTimeMillis();
         long elapsedMilliseconds = end - start;
 
-        System.out.println(String.format("%d次RPC调用(dubbo协议),共耗时%d毫秒,平均%f/秒", max, elapsedMilliseconds, max / (elapsedMilliseconds / 1000.0F)));
+        System.out.println(String.format("%d次RPC调用,共耗时%d毫秒,平均%f/秒", max, elapsedMilliseconds, max / (elapsedMilliseconds / 1000.0F)));
     }
 
 }

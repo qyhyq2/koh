@@ -24,7 +24,6 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
     private static final String processor = "$Processor";
     public static final int DEFAULT_PORT = 30880;
     private static final Logger logger = LoggerFactory.getLogger(Thrift2Protocol.class);
-    private TSocket tSocket;
 
     @Override
     public int getDefaultPort() {
@@ -107,7 +106,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                 Class<?> clazz = Class.forName(clientClsName);
                 Constructor constructor = clazz.getConstructor(TProtocol.class);
                 try {
-                    tSocket = new TSocket(url.getHost(), url.getPort());
+                    TSocket tSocket = new TSocket(url.getHost(), url.getPort());
                     transport = new TFramedTransport(tSocket);
                     protocol = new TBinaryProtocol(transport);
                     thriftClient = (T) constructor.newInstance(protocol);
@@ -127,7 +126,8 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
 
     @Override
     public void destroy() {
+        System.out.println("destroy");
         super.destroy();
-        tSocket.close();
+//        tSocket.close();
     }
 }
