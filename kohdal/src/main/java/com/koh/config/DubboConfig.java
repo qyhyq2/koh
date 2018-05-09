@@ -6,10 +6,13 @@ import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.spring.AnnotationBean;
 import com.alibaba.dubbo.rpc.Exporter;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 @ConditionalOnClass(Exporter.class)
@@ -19,16 +22,14 @@ public class DubboConfig {
     private String applicationName;
 
     @Value("${dubbo.registry.protocol}")
-    private String protocol;
+    private String registryProtocol;
 
     @Value("${dubbo.registry.address}")
     private String registryAddress;
 
-    @Value("${dubbo.protocol.name}")
-    private String protocolName;
-
-    @Value("${dubbo.protocol.port}")
-    private int protocolPort;
+    // name:port
+    @Value("#{'${dubbo.protocols}'.split(',')}")
+    private List<String> protocols;
 
     @Value("${dubbo.provider.timeout}")
     private int timeout;
@@ -83,7 +84,7 @@ public class DubboConfig {
     public RegistryConfig registryConfig() {
         // 连接注册中心配置
         RegistryConfig registry = new RegistryConfig();
-        registry.setProtocol(protocol);
+        registry.setProtocol(registryProtocol);
         registry.setAddress(registryAddress);
         return registry;
     }
@@ -93,33 +94,38 @@ public class DubboConfig {
      * @return
      */
     @Bean
-    public ProtocolConfig protocolConfig() {
-        // 服务提供者协议配置
-        ProtocolConfig protocolConfig = new ProtocolConfig();
-        protocolConfig.setName(protocolName);
-        protocolConfig.setPort(protocolPort);
-        protocolConfig.setThreads(threads);
-        protocolConfig.setDispatcher(dispatcher);
-        return protocolConfig;
+    public List<ProtocolConfig> protocolConfig() {
+        List<ProtocolConfig> configs = Lists.newArrayList();
+
+        protocols.forEach(prot -> {
+            // 服务提供者协议配置
+            ProtocolConfig protocolConfig = new ProtocolConfig();
+            protocolConfig.setName(getProtocolName(prot));
+            protocolConfig.setPort(getProtocolPort(prot));
+            protocolConfig.setThreads(threads);
+            protocolConfig.setDispatcher(dispatcher);
+            configs.add(protocolConfig);
+        });
+        return configs;
     }
 
     /**
      * dubbo服务提供
      * @param applicationConfig
      * @param registryConfig
-     * @param protocolConfig
+     * @param protocolConfigs
      * @return
      */
     @Bean
     public ProviderConfig providerConfig(ApplicationConfig applicationConfig, RegistryConfig registryConfig,
-                                         ProtocolConfig protocolConfig) {
+                                         List<ProtocolConfig> protocolConfigs) {
         ProviderConfig providerConfig = new ProviderConfig();
         providerConfig.setTimeout(timeout);
         providerConfig.setRetries(retries);
         providerConfig.setDelay(delay);
         providerConfig.setApplication(applicationConfig);
         providerConfig.setRegistry(registryConfig);
-        providerConfig.setProtocol(protocolConfig);
+        providerConfig.setProtocols(protocolConfigs);
         providerConfig.setCluster(cluster);
         providerConfig.setFilter(filter);
         return providerConfig;
@@ -133,14 +139,6 @@ public class DubboConfig {
         this.applicationName = applicationName;
     }
 
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
     public String getRegistryAddress() {
         return registryAddress;
     }
@@ -149,20 +147,20 @@ public class DubboConfig {
         this.registryAddress = registryAddress;
     }
 
-    public String getProtocolName() {
-        return protocolName;
+    public String getRegistryProtocol() {
+        return registryProtocol;
     }
 
-    public void setProtocolName(String protocolName) {
-        this.protocolName = protocolName;
+    public void setRegistryProtocol(String registryProtocol) {
+        this.registryProtocol = registryProtocol;
     }
 
-    public int getProtocolPort() {
-        return protocolPort;
+    public List<String> getProtocols() {
+        return protocols;
     }
 
-    public void setProtocolPort(int protocolPort) {
-        this.protocolPort = protocolPort;
+    public void setProtocols(List<String> protocols) {
+        this.protocols = protocols;
     }
 
     public int getTimeout() {
@@ -219,5 +217,19 @@ public class DubboConfig {
 
     public void setFilter(String filter) {
         this.filter = filter;
+    }
+
+    private String getProtocolName(String protocol) {
+        if (protocol == null) {
+            return "";
+        }
+        return protocol.substring(0, protocol.indexOf(':'));
+    }
+
+    private Integer getProtocolPort(String protocol) {
+        if (protocol == null) {
+            return -1;
+        }
+        return Integer.valueOf(protocol.substring(protocol.indexOf(':') + 1));
     }
 }

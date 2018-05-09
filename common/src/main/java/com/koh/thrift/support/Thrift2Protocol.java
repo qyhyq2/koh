@@ -7,7 +7,7 @@ import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.thrift.TProcessor;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
@@ -17,13 +17,18 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
 import java.lang.reflect.Constructor;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Thrift2Protocol extends AbstractProxyProtocol {
     private static final String iFace = "$Iface";
     private static final String client = "$Client";
     private static final String processor = "$Processor";
     public static final int DEFAULT_PORT = 30880;
+    public static final int DEFAULT_TRHEADS = 300;
     private static final Logger logger = LoggerFactory.getLogger(Thrift2Protocol.class);
+
+    private final Map<String, TServer> serverMap = new ConcurrentHashMap<String, TServer>();
     private TSocket tSocket;
 
     @Override
@@ -34,11 +39,35 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url)
             throws RpcException {
-
         logger.info("impl => " + impl.getClass());
         logger.info("type => " + type.getName());
         logger.info("url => " + url);
 
+        String addr = getAddr(url);
+        TServer thriftServer = serverMap.get(addr);
+        if (thriftServer == null) {
+            thriftServer = new TThreadedSelectorServer(buildArgs(impl, type, url));
+            serverMap.put(addr, thriftServer);
+        }
+
+        TServer finalThriftServer = thriftServer;
+        new Thread(() -> {
+            logger.info("Start Thrift Server");
+            finalThriftServer.serve();
+            logger.info("Thrift server started.");
+        }).start();
+
+        return () -> {
+            try {
+                logger.info("Close Thrift Server");
+                finalThriftServer.stop();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+        };
+    }
+
+    private <T> TThreadedSelectorServer.Args buildArgs(T impl, Class<T> type, URL url) {
         TProcessor tprocessor;
         TThreadedSelectorServer.Args tArgs = null;
         String typeName = type.getName();
@@ -50,13 +79,17 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                 Constructor constructor = clazz.getConstructor(type);
                 try {
                     tprocessor = (TProcessor) constructor.newInstance(impl);
-                    transport = new TNonblockingServerSocket(url.getPort());
+                    TNonblockingServerSocket.NonblockingAbstractServerSocketArgs socketArgs =
+                            new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs()
+                                    .port(url.getPort()).backlog(100)
+                                    .clientTimeout(url.getParameter(Constants.TIMEOUT_KEY, 0));
+                    transport = new TNonblockingServerSocket(socketArgs);
                     tArgs = new TThreadedSelectorServer.Args(transport);
                     tArgs.processor(tprocessor);
                     tArgs.transportFactory(new TFramedTransport.Factory());
-                    tArgs.protocolFactory(new TBinaryProtocol.Factory());
+                    tArgs.protocolFactory(new TCompactProtocol.Factory());
                     tArgs.selectorThreads(Runtime.getRuntime().availableProcessors());
-                    tArgs.workerThreads(url.getParameter(Constants.THREADS_KEY, 100));
+                    tArgs.workerThreads(url.getParameter(Constants.THREADS_KEY, DEFAULT_TRHEADS));
                     tArgs.acceptPolicy(TThreadedSelectorServer.Args.AcceptPolicy.FAIR_ACCEPT);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
@@ -72,22 +105,8 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
             logger.error("Fail to create thrift server(" + url + ") due to null args");
             throw new RpcException("Fail to create thrift server(" + url + ") due to null args");
         }
-        final TServer thriftServer = new TThreadedSelectorServer(tArgs);
 
-        new Thread(() -> {
-            logger.info("Start Thrift Server");
-            thriftServer.serve();
-            logger.info("Thrift server started.");
-        }).start();
-
-        return () -> {
-            try {
-                logger.info("Close Thrift Server");
-                thriftServer.stop();
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-        };
+        return tArgs;
     }
 
     @Override
@@ -109,7 +128,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                 try {
                     tSocket = new TSocket(url.getHost(), url.getPort());
                     transport = new TFramedTransport(tSocket);
-                    protocol = new TBinaryProtocol(transport);
+                    protocol = new TCompactProtocol(transport);
                     thriftClient = (T) constructor.newInstance(protocol);
                     transport.open();
                     logger.info("thrift client opened for service(" + url + ")");
