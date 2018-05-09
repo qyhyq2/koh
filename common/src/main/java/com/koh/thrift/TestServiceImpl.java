@@ -12,7 +12,7 @@ public class TestServiceImpl implements TestService.Iface {
     @Override
     public boolean exists(String path) throws TException {
         System.out.println("received path:" + path);
-        return false;
+        return true;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class TestServiceImpl implements TestService.Iface {
         System.out.println("received path:" + path);
         if ("1".equals(path)) {
             try {
-                Thread.sleep(6000);
+                Thread.sleep(8000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

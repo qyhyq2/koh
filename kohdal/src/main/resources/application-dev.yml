@@ -20,7 +20,7 @@ dubbo:
     dispatcher: message
     cluster: failover
     filter: -validation
-  protocol:
-    name: thrift
-    port: 9090
+  protocols:
+    thrift:9090,dubbo:-1
+
 
