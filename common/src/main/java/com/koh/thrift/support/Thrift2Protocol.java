@@ -25,7 +25,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
     private static final String client = "$Client";
     private static final String processor = "$Processor";
     public static final int DEFAULT_PORT = 30880;
-    public static final int DEFAULT_TRHEADS = 300;
+    public static final int DEFAULT_THREADS = 100;
     private static final Logger logger = LoggerFactory.getLogger(Thrift2Protocol.class);
 
     private final Map<String, TServer> serverMap = new ConcurrentHashMap<String, TServer>();
@@ -79,7 +79,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                     tprocessor = (TProcessor) constructor.newInstance(impl);
                     TNonblockingServerSocket.NonblockingAbstractServerSocketArgs socketArgs =
                             new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs()
-                                    .port(url.getPort()).backlog(100)
+                                    .port(url.getPort())
                                     .clientTimeout(url.getParameter(Constants.TIMEOUT_KEY, 0));
                     transport = new TNonblockingServerSocket(socketArgs);
                     tArgs = new TThreadedSelectorServer.Args(transport);
@@ -87,7 +87,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                     tArgs.transportFactory(new TFramedTransport.Factory());
                     tArgs.protocolFactory(new TCompactProtocol.Factory());
                     tArgs.selectorThreads(Runtime.getRuntime().availableProcessors());
-                    tArgs.workerThreads(url.getParameter(Constants.THREADS_KEY, DEFAULT_TRHEADS));
+                    tArgs.workerThreads(url.getParameter(Constants.THREADS_KEY, DEFAULT_THREADS));
                     tArgs.acceptPolicy(TThreadedSelectorServer.Args.AcceptPolicy.FAIR_ACCEPT);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
