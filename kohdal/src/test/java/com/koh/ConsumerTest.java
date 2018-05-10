@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class ConsumerTest extends AbstractServiceTest {
 
-    @Reference
+    @Reference(loadbalance = "dubboRandom")
     private TestService.Iface testService;
 
     @Before
