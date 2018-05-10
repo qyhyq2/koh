@@ -28,7 +28,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
     public static final int DEFAULT_TRHEADS = 300;
     private static final Logger logger = LoggerFactory.getLogger(Thrift2Protocol.class);
 
-    private final Map<String, TServer> serverMap = new ConcurrentHashMap<String, TServer>();
+    private final Map<String, TServer> serverMap = new ConcurrentHashMap<>();
     private TSocket tSocket;
 
     @Override
@@ -37,8 +37,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
     }
 
     @Override
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url)
-            throws RpcException {
+    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         logger.info("impl => " + impl.getClass());
         logger.info("type => " + type.getName());
         logger.info("url => " + url);
@@ -61,7 +60,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
             try {
                 logger.info("Close Thrift Server");
                 finalThriftServer.stop();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.warn(e.getMessage(), e);
             }
         };

@@ -6,13 +6,10 @@ import com.alibaba.dubbo.config.ProviderConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.spring.AnnotationBean;
 import com.alibaba.dubbo.rpc.Exporter;
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 @ConditionalOnClass(Exporter.class)
@@ -27,9 +24,8 @@ public class DubboConfig {
     @Value("${dubbo.registry.address}")
     private String registryAddress;
 
-    // name:port
-    @Value("#{'${dubbo.protocols}'.split(',')}")
-    private List<String> protocols;
+    @Value("${dubbo.protocol.name}")
+    private String protocolName;
 
     @Value("${dubbo.provider.timeout}")
     private int timeout;
@@ -93,39 +89,30 @@ public class DubboConfig {
      * 默认基于dubbo协议提供服务
      * @return
      */
-    @Bean
-    public List<ProtocolConfig> protocolConfig() {
-        List<ProtocolConfig> configs = Lists.newArrayList();
-
-        protocols.forEach(prot -> {
-            // 服务提供者协议配置
-            ProtocolConfig protocolConfig = new ProtocolConfig();
-            protocolConfig.setName(getProtocolName(prot));
-            protocolConfig.setPort(getProtocolPort(prot));
-            protocolConfig.setThreads(threads);
-            protocolConfig.setDispatcher(dispatcher);
-            configs.add(protocolConfig);
-        });
-        return configs;
+    @Bean("dubbo")
+    public ProtocolConfig protocolConfig() {
+        // 服务提供者协议配置
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setName(protocolName);
+        protocolConfig.setThreads(threads);
+        protocolConfig.setDispatcher(dispatcher);
+        return protocolConfig;
     }
 
     /**
      * dubbo服务提供
      * @param applicationConfig
      * @param registryConfig
-     * @param protocolConfigs
      * @return
      */
     @Bean
-    public ProviderConfig providerConfig(ApplicationConfig applicationConfig, RegistryConfig registryConfig,
-                                         List<ProtocolConfig> protocolConfigs) {
+    public ProviderConfig providerConfig(ApplicationConfig applicationConfig, RegistryConfig registryConfig) {
         ProviderConfig providerConfig = new ProviderConfig();
         providerConfig.setTimeout(timeout);
         providerConfig.setRetries(retries);
         providerConfig.setDelay(delay);
         providerConfig.setApplication(applicationConfig);
         providerConfig.setRegistry(registryConfig);
-        providerConfig.setProtocols(protocolConfigs);
         providerConfig.setCluster(cluster);
         providerConfig.setFilter(filter);
         return providerConfig;
@@ -155,12 +142,12 @@ public class DubboConfig {
         this.registryProtocol = registryProtocol;
     }
 
-    public List<String> getProtocols() {
-        return protocols;
+    public String getProtocolName() {
+        return protocolName;
     }
 
-    public void setProtocols(List<String> protocols) {
-        this.protocols = protocols;
+    public void setProtocolName(String protocolName) {
+        this.protocolName = protocolName;
     }
 
     public int getTimeout() {
@@ -219,17 +206,17 @@ public class DubboConfig {
         this.filter = filter;
     }
 
-    private String getProtocolName(String protocol) {
-        if (protocol == null) {
-            return "";
-        }
-        return protocol.substring(0, protocol.indexOf(':'));
-    }
-
-    private Integer getProtocolPort(String protocol) {
-        if (protocol == null) {
-            return -1;
-        }
-        return Integer.valueOf(protocol.substring(protocol.indexOf(':') + 1));
-    }
+//    private String getProtocolName(String protocol) {
+//        if (protocol == null) {
+//            return "";
+//        }
+//        return protocol.substring(0, protocol.indexOf(':'));
+//    }
+//
+//    private Integer getProtocolPort(String protocol) {
+//        if (protocol == null) {
+//            return -1;
+//        }
+//        return Integer.valueOf(protocol.substring(protocol.indexOf(':') + 1));
+//    }
 }
