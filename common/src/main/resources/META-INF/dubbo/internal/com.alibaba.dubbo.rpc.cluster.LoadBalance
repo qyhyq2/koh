@@ -1,0 +1,1 @@
+dubboRandom=com.koh.thrift.support.lb.DubboRandomLoadBalance

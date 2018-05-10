@@ -13,4 +13,6 @@ public class ThriftConstant {
     public static final String CLIENT = "$Client";
     public static final String PROCESSOR = "$Processor";
     public static final String CONFIG_PREFIX = "thriftServer";
+    public static final int DEFAULT_PORT = 30880;
+    public static final int DEFAULT_THREADS = 100;
 }
