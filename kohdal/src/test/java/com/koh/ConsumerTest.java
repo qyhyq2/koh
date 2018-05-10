@@ -16,6 +16,11 @@ public class ConsumerTest extends AbstractServiceTest {
     }
 
     @Test
+    public void test1() throws Exception {
+        System.out.println(testService.getById((byte) 1).name);
+    }
+
+    @Test
     public void test() throws Exception {
         System.out.println("dubbo RPC testing => ");
 
