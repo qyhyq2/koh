@@ -20,6 +20,18 @@ dubbo:
     dispatcher: message
     cluster: failover
     filter: -validation
-  protocols: thrift:9090,dubbo:-1
+  protocol:
+    name: dubbo
+
+thriftServer:
+    configs:
+       - name: testService
+         port: 30880
+         threads: 100
+         dispatcher: message
+       - name: secondService
+         port: 30881
+         threads: 100
+         dispatcher: message
 
 

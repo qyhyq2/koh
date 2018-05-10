@@ -36,8 +36,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
     }
 
     @Override
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url)
-            throws RpcException {
+    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         logger.info("impl => " + impl.getClass());
         logger.info("type => " + type.getName());
         logger.info("url => " + url);
@@ -60,7 +59,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
             try {
                 logger.info("Close Thrift Server");
                 finalThriftServer.stop();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.warn(e.getMessage(), e);
             }
         };

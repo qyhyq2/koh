@@ -6,7 +6,7 @@ import org.apache.thrift.TException;
 /**
  * Created by qianyuhang on 2018/5/2.
  */
-//@Service
+@Service(protocol = {"testService"})
 public class TestServiceImpl implements TestService.Iface {
 
     @Override
@@ -29,7 +29,7 @@ public class TestServiceImpl implements TestService.Iface {
     }
 
     @Override
-    public Data getById(byte id) throws TException {
+    public Data getById(int id) throws TException {
         System.out.println("received id:" + id);
         return new Data(id, "No." + id, new SubData(id, "NO." + id));
     }
