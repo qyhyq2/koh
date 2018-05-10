@@ -28,10 +28,8 @@ thriftServer:
        - name: testService
          port: 30880
          threads: 100
-         dispatcher: message
        - name: secondService
          port: 30881
          threads: 100
-         dispatcher: message
 
 

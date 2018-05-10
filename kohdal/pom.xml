@@ -46,6 +46,7 @@
             <!--</exclusions>-->
         <!--</dependency>-->
 
+
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>

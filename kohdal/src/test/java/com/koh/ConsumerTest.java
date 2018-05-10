@@ -1,8 +1,9 @@
 package com.koh;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.koh.thrift.TestService;
+
 import com.koh.thrift.second.SecondService;
+import com.koh.thrift.test.TestService;
 import org.apache.thrift.TException;
 import org.junit.Before;
 import org.junit.Test;

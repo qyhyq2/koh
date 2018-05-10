@@ -1,7 +1,7 @@
-package com.koh.config.thrift;
+package com.koh.thrift.support.thrift;
 
 import com.alibaba.dubbo.config.ProtocolConfig;
-import com.koh.util.ThriftServerConfigLoader;
+import com.koh.thrift.util.ThriftServerConfigLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -12,6 +12,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.StringUtils;
+
+import static com.koh.thrift.support.ThriftConstant.*;
 
 /**
  * @author qianyuhang
@@ -29,16 +31,13 @@ public class DubboThriftProtocolConfig implements BeanDefinitionRegistryPostProc
             config.getConfigs().forEach(item -> {
                 BeanDefinitionBuilder builder =
                         BeanDefinitionBuilder.rootBeanDefinition(ProtocolConfig.class)
-                                .addPropertyValue("name", ThriftServerConfig.PROTOCOL_THRIFT)
-                                .addPropertyValue("default", false);
+                                .addPropertyValue(PROTOCOL_KEY_NAME, PROTOCOL_THRIFT)
+                                .addPropertyValue(PROTOCOL_KEY_DEFAULT, false);
                 if (item.getPort() > 0) {
-                    builder.addPropertyValue("port", item.getPort());
+                    builder.addPropertyValue(PROTOCOL_KEY_PORT, item.getPort());
                 }
                 if (item.getThreads() > 0) {
-                    builder.addPropertyValue("threads", item.getThreads());
-                }
-                if (!StringUtils.isEmpty(item.getDispatcher())) {
-                    builder.addPropertyValue("dispatcher", item.getDispatcher());
+                    builder.addPropertyValue(PROTOCOL_KEY_THREADS, item.getThreads());
                 }
                 if (!StringUtils.isEmpty(item.getName())) {
                     registry.registerBeanDefinition(item.getName(), builder.getBeanDefinition());

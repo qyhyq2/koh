@@ -1,6 +1,6 @@
 package com.koh.server;
 
-import com.koh.thrift.TestService;
+import com.koh.thrift.test.TestService;
 import org.apache.thrift.transport.TTransportException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
