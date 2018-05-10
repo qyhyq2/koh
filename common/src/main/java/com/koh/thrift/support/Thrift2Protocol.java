@@ -29,7 +29,6 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
     private static final Logger logger = LoggerFactory.getLogger(Thrift2Protocol.class);
 
     private final Map<String, TServer> serverMap = new ConcurrentHashMap<String, TServer>();
-    private TSocket tSocket;
 
     @Override
     public int getDefaultPort() {

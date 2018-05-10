@@ -20,7 +20,6 @@ dubbo:
     dispatcher: message
     cluster: failover
     filter: -validation
-  protocols:
-    thrift:9090,dubbo:-1
+  protocols: thrift:9090,dubbo:-1
 
 
