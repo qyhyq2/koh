@@ -2,6 +2,7 @@ package com.koh;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.koh.thrift.TestService;
+import com.koh.thrift.second.SecondService;
 import org.apache.thrift.TException;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +16,9 @@ public class ConsumerTest extends AbstractServiceTest {
     @Reference
     private TestService.Iface testService;
 
+    @Reference
+    private SecondService.Iface secondService;
+
     @Before
     public void setUp() throws Exception {
 
@@ -23,6 +27,11 @@ public class ConsumerTest extends AbstractServiceTest {
     @Test
     public void test() throws Exception {
         System.out.println(testService.getById((byte) 1).name);
+    }
+
+    @Test
+    public void ga() throws Exception {
+        System.out.println(secondService.add(1, 2));
     }
 
 
