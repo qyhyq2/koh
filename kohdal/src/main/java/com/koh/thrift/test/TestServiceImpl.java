@@ -1,4 +1,4 @@
-package com.koh.thrift;
+package com.koh.thrift.test;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import org.apache.thrift.TException;

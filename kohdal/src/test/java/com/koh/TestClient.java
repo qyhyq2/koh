@@ -1,5 +1,6 @@
-package com.koh.thrift;
+package com.koh;
 
+import com.koh.thrift.test.TestService;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
@@ -55,7 +56,7 @@ public class TestClient {
     }
 
     public static void main(String[] args) {
-        TestClient client = new TestClient("localhost", 9090);
+        TestClient client = new TestClient("localhost", 30880);
         try {
             client.open();
             boolean isExists = client.getTestService().exists("12345");

@@ -20,12 +20,11 @@ import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.koh.thrift.support.ThriftConstant.*;
+
 public class Thrift2Protocol extends AbstractProxyProtocol {
-    private static final String iFace = "$Iface";
-    private static final String client = "$Client";
-    private static final String processor = "$Processor";
     public static final int DEFAULT_PORT = 30880;
-    public static final int DEFAULT_TRHEADS = 300;
+    public static final int DEFAULT_THREADS = 100;
     private static final Logger logger = LoggerFactory.getLogger(Thrift2Protocol.class);
 
     private final Map<String, TServer> serverMap = new ConcurrentHashMap<>();
@@ -71,8 +70,8 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
         TThreadedSelectorServer.Args tArgs = null;
         String typeName = type.getName();
         TNonblockingServerSocket transport;
-        if (typeName.endsWith(iFace)) {
-            String processorClsName = typeName.substring(0, typeName.indexOf(iFace)) + processor;
+        if (typeName.endsWith(IFACE)) {
+            String processorClsName = typeName.substring(0, typeName.indexOf(IFACE)) + PROCESSOR;
             try {
                 Class<?> clazz = Class.forName(processorClsName);
                 Constructor constructor = clazz.getConstructor(type);
@@ -80,7 +79,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                     tprocessor = (TProcessor) constructor.newInstance(impl);
                     TNonblockingServerSocket.NonblockingAbstractServerSocketArgs socketArgs =
                             new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs()
-                                    .port(url.getPort()).backlog(100)
+                                    .port(url.getPort())
                                     .clientTimeout(url.getParameter(Constants.TIMEOUT_KEY, 0));
                     transport = new TNonblockingServerSocket(socketArgs);
                     tArgs = new TThreadedSelectorServer.Args(transport);
@@ -88,7 +87,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                     tArgs.transportFactory(new TFramedTransport.Factory());
                     tArgs.protocolFactory(new TCompactProtocol.Factory());
                     tArgs.selectorThreads(Runtime.getRuntime().availableProcessors());
-                    tArgs.workerThreads(url.getParameter(Constants.THREADS_KEY, DEFAULT_TRHEADS));
+                    tArgs.workerThreads(url.getParameter(Constants.THREADS_KEY, DEFAULT_THREADS));
                     tArgs.acceptPolicy(TThreadedSelectorServer.Args.AcceptPolicy.FAIR_ACCEPT);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
@@ -120,8 +119,8 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
             T thriftClient = null;
 
             String typeName = type.getName();
-            if (typeName.endsWith(iFace)) {
-                String clientClsName = typeName.substring(0, typeName.indexOf(iFace)) + client;
+            if (typeName.endsWith(IFACE)) {
+                String clientClsName = typeName.substring(0, typeName.indexOf(IFACE)) + CLIENT;
                 Class<?> clazz = Class.forName(clientClsName);
                 Constructor constructor = clazz.getConstructor(TProtocol.class);
                 try {
