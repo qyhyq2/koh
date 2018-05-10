@@ -1,6 +1,6 @@
 package com.koh.thrift.client;
 
-import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 
 /**
  * 连接池接口
@@ -11,12 +11,12 @@ public interface ConnectionProvider {
      *
      * @return TSocket
      */
-    TSocket getConnection();
+    TTransport getConnection();
 
     /**
      * 返回链接
      *
      * @param socket
      */
-    void returnCon(TSocket socket);
+    void returnCon(TTransport socket);
 }

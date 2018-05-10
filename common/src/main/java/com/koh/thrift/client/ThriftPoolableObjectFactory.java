@@ -1,6 +1,7 @@
 package com.koh.thrift.client;
 
 import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
@@ -10,11 +11,17 @@ public class ThriftPoolableObjectFactory implements PoolableObjectFactory<TTrans
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    /** 服务的IP */
+    /**
+     * 服务的IP
+     */
     private String serviceIP;
-    /** 服务的端口 */
+    /**
+     * 服务的端口
+     */
     private int servicePort;
-    /** 超时设置 */
+    /**
+     * 超时设置
+     */
     private int timeOut;
 
     public ThriftPoolableObjectFactory(String serviceIP, int servicePort, int timeOut) {
@@ -47,7 +54,8 @@ public class ThriftPoolableObjectFactory implements PoolableObjectFactory<TTrans
     @Override
     public TTransport makeObject() throws Exception {
         try {
-            TTransport transport = new TSocket(this.serviceIP, this.servicePort, this.timeOut);
+            TSocket tSocket = new TSocket(this.serviceIP, this.servicePort, this.timeOut);
+            TTransport transport = new TFramedTransport(tSocket);
             transport.open();
             return transport;
         } catch (Exception e) {
@@ -69,9 +77,8 @@ public class ThriftPoolableObjectFactory implements PoolableObjectFactory<TTrans
     @Override
     public boolean validateObject(TTransport tTransport) {
         try {
-            if (tTransport instanceof TSocket) {
-                TSocket thriftSocket = (TSocket) tTransport;
-                if (thriftSocket.isOpen()) {
+            if (tTransport instanceof TFramedTransport) {
+                if (tTransport.isOpen()) {
                     return true;
                 } else {
                     return false;

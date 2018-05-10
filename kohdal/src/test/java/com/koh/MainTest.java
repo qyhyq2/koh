@@ -1,7 +1,7 @@
 package com.koh;
 
 import com.alibaba.dubbo.rpc.RpcException;
-import com.koh.thrift.TestService;
+import com.koh.thrift.test.TestService;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;

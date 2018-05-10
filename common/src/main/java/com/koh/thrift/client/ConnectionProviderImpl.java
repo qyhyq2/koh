@@ -2,7 +2,6 @@ package com.koh.thrift.client;
 
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,10 +31,10 @@ public class ConnectionProviderImpl implements ConnectionProvider, InitializingB
     private ObjectPool<TTransport> objectPool = null;
 
     @Override
-    public TSocket getConnection() {
+    public TTransport getConnection() {
         try {
             // 从对象池取对象
-            TSocket socket = (TSocket) objectPool.borrowObject();
+            TTransport socket =  objectPool.borrowObject();
             return socket;
         } catch (Exception e) {
             throw new RuntimeException("error getConnection()", e);
@@ -43,7 +42,7 @@ public class ConnectionProviderImpl implements ConnectionProvider, InitializingB
     }
 
     @Override
-    public void returnCon(TSocket socket) {
+    public void returnCon(TTransport socket) {
         try {
             // 将对象放回对象池
             objectPool.returnObject(socket);
