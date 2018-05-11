@@ -6,7 +6,7 @@ import org.apache.thrift.TException;
 /**
  * Created by qianyuhang on 2018/5/2.
  */
-//@Service
+@Service
 public class SecondServiceImpl implements SecondService.Iface {
 
     @Override
