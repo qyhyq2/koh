@@ -21,6 +21,7 @@ public class TProtocolFactory extends BaseKeyedPooledObjectFactory<ThriftServerI
 
     @Override
     public TProtocol create(ThriftServerInfo key) throws Exception {
+        System.out.println("create");
         TSocket tSocket = new TSocket(key.getHost(), key.getPort());
         tSocket.setTimeout(timeout);
         TTransport tTransport = new TFramedTransport(tSocket);
@@ -39,7 +40,6 @@ public class TProtocolFactory extends BaseKeyedPooledObjectFactory<ThriftServerI
     @Override
     public void passivateObject(ThriftServerInfo key, PooledObject<TProtocol> pooledObject) throws TTransportException {
         if (!keepAlive) {
-            pooledObject.getObject().getTransport().flush();
             pooledObject.getObject().getTransport().close();
         }
     }
@@ -60,8 +60,8 @@ public class TProtocolFactory extends BaseKeyedPooledObjectFactory<ThriftServerI
      */
     @Override
     public void destroyObject(ThriftServerInfo key, PooledObject<TProtocol> pooledObject) throws TTransportException {
+        System.out.println("destroy");
         if (pooledObject.getObject() != null && pooledObject.getObject().getTransport().isOpen()) {
-            pooledObject.getObject().getTransport().flush();
             pooledObject.getObject().getTransport().close();
         }
         pooledObject.markAbandoned();
