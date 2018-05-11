@@ -6,6 +6,9 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
+import com.koh.thrift.client.TProtocolProvider;
+import com.koh.thrift.client.ThriftServerInfo;
+import org.aopalliance.intercept.MethodInterceptor;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -13,8 +16,8 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TNonblockingServerSocket;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Constructor;
 import java.util.Map;
@@ -51,8 +54,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                 finalThriftServer.serve();
                 log.info("Thrift server started.");
             }).start();
-        }
-        else {
+        } else {
             finalThriftServer = thriftServer;
         }
 
@@ -118,7 +120,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                 String clientClsName = typeName.substring(0, typeName.indexOf(IFACE)) + CLIENT;
                 Class<?> clazz = Class.forName(clientClsName);
                 Constructor constructor = clazz.getConstructor(TProtocol.class);
-                thriftClient = createClient(url, constructor);
+                thriftClient = createClientProxy(url, constructor, type);
             }
             return thriftClient;
         } catch (Exception e) {
@@ -127,28 +129,19 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
         }
     }
 
-    private <T> T createClient(URL url, Constructor constructor) {
-        TTransport transport;
-        TProtocol protocol;
-        T thriftClient;
+    private <T> T createClientProxy(URL url, Constructor constructor, Class<T> type) {
+        Object proxy;
         try {
-            TSocket tSocket = new TSocket(url.getHost(), url.getPort());
-            transport = new TFramedTransport(tSocket);
-            protocol = new TCompactProtocol(transport);
-            thriftClient = (T) constructor.newInstance(protocol);
-            transport.open();
+            proxy = new ProxyFactory(type, (MethodInterceptor) invocation -> {
+                TProtocol protocol = TProtocolProvider.getInstance().getConnection(ThriftServerInfo.of(url.getAddress()));
+                T thriftClient = (T) constructor.newInstance(protocol);
+                return invocation.getMethod().invoke(thriftClient, invocation.getArguments());
+            }).getProxy(ClassUtils.getDefaultClassLoader());
             log.info("thrift client opened for service(" + url + ")");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RpcException("Fail to create remoting client:" + e.getMessage(), e);
         }
-        return thriftClient;
-    }
-
-    @Override
-    public void destroy() {
-        System.out.println("destroy");
-        super.destroy();
-//        tSocket.close();
+        return (T) proxy;
     }
 }

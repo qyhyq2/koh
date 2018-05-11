@@ -14,7 +14,8 @@ import java.util.concurrent.Executors;
 
 public class ConsumerTest extends AbstractServiceTest {
 
-    @Reference(loadbalance = "dubboRandom")
+//    @Reference(loadbalance = "dubboRandom")
+    @Reference
     private TestService.Iface testService;
 
     @Reference

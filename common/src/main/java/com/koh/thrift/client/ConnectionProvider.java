@@ -1,22 +1,32 @@
 package com.koh.thrift.client;
 
-import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.protocol.TProtocol;
 
 /**
  * 连接池接口
  */
 public interface ConnectionProvider {
     /**
-     * 取链接池中的一个链接
+     * 获取thrift连接
      *
-     * @return TSocket
+     * @param thriftServerInfo
+     * @return
      */
-    TTransport getConnection();
+    TProtocol getConnection(ThriftServerInfo thriftServerInfo);
 
     /**
-     * 返回链接
+     * 释放返回连接
      *
-     * @param socket
+     * @param thriftServerInfo
+     * @param transport
      */
-    void returnCon(TTransport socket);
+    void returnConnection(ThriftServerInfo thriftServerInfo, TProtocol transport);
+
+    /**
+     * 释放返回失败的连接
+     *
+     * @param thriftServerInfo
+     * @param transport
+     */
+    void returnBrokenConnection(ThriftServerInfo thriftServerInfo, TProtocol transport);
 }
