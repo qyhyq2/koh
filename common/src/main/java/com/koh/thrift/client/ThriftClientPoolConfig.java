@@ -1,7 +1,7 @@
 package com.koh.thrift.client;
 
 public class ThriftClientPoolConfig {
-    public static final int DEFAULT_MIN_IDLE = 1;
+    public static final int DEFAULT_MIN_IDLE = 0;
     public static final int DEFAULT_MAX_CONN = 30;
     public static final int DEFAULT_MAX_IDLE = 30;
     public static final int DEFAULT_MAX_WAIT = 5000;

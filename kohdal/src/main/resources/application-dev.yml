@@ -37,7 +37,7 @@ thrift:
     pool:
       maxTotal: 30
       maxIdle: 30
-      minIdle: 1
+      minIdle: 0
       maxWait: 5000
 
 

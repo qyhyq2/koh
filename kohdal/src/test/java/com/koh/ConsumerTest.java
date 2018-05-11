@@ -38,7 +38,7 @@ public class ConsumerTest extends AbstractServiceTest {
 
     @Test
     public void testPerm() throws Exception {
-        int max = 1000;
+        int max = 5000;
         System.out.println("dubbo RPC testing => ");
         ExecutorService threadPool = Executors.newFixedThreadPool(30);
         CountDownLatch latch = new CountDownLatch(max);
@@ -49,7 +49,7 @@ public class ConsumerTest extends AbstractServiceTest {
             int finalI = i;
             threadPool.submit(() -> {
                 try {
-                    System.out.println(testService.getById(finalI));
+                    testService.getById(finalI);
                     latch.countDown();
                 } catch (TException e) {
                     e.printStackTrace();
