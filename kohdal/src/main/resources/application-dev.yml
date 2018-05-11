@@ -23,7 +23,8 @@ dubbo:
   protocol:
     name: dubbo
 
-thriftServer:
+thrift:
+  server:
     configs:
        - name: testService
          port: 30880
@@ -31,5 +32,13 @@ thriftServer:
        - name: secondService
          port: 30881
          threads: 100
+  client:
+    timeout: 3000
+    pool:
+      maxTotal: 30
+      maxIdle: 30
+      minIdle: 1
+      maxWait: 5000
+
 
 

@@ -1,55 +1,54 @@
 package com.koh.thrift.client;
 
+import com.koh.thrift.support.Thrift2Protocol;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.apache.thrift.protocol.TProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.concurrent.TimeUnit;
 
+@Service
+@ConditionalOnClass(Thrift2Protocol.class)
 public class TProtocolProvider implements ConnectionProvider {
     private static final Logger log = LoggerFactory.getLogger(TProtocolProvider.class);
 
-    private static final int MIN_CONN = 1;
-    private static final int MAX_CONN = 1000;
-    private static final int TIMEOUT = 5000;
+    private static TProtocolProvider INSTANCE;
 
     private final GenericKeyedObjectPool<ThriftServerInfo, TProtocol> connections;
 
     /**
      * 构造默认Thrift连接池实现
-     *
-     * @param config
      */
-    public TProtocolProvider(GenericKeyedObjectPoolConfig config) {
-        connections = new GenericKeyedObjectPool<>(new TProtocolFactory(true), config);
+    public TProtocolProvider(ThriftClientConfig clientConfig) {
+        GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
+        ThriftClientPoolConfig pool = clientConfig.getPool();
+        int maxTotal = pool.getMaxTotal() > 0 ? pool.getMaxTotal() : ThriftClientPoolConfig.DEFAULT_MAX_CONN;
+        config.setMaxTotal(maxTotal);
+        config.setMaxTotalPerKey(maxTotal);
+        config.setMaxIdlePerKey(pool.getMaxIdle() > 0 ? pool.getMaxIdle() : ThriftClientPoolConfig.DEFAULT_MAX_IDLE);
+        config.setMinIdlePerKey(pool.getMinIdle() > 0 ? pool.getMinIdle() : ThriftClientPoolConfig.DEFAULT_MIN_IDLE);
+        config.setTestOnBorrow(true);
+        config.setMinEvictableIdleTimeMillis(TimeUnit.MINUTES.toMillis(1));
+        config.setSoftMinEvictableIdleTimeMillis(TimeUnit.MINUTES.toMillis(1));
+        config.setJmxEnabled(false);
+        config.setMaxWaitMillis(pool.getMaxWait() > 0 ? pool.getMaxWait() : ThriftClientPoolConfig.DEFAULT_MAX_WAIT);
+        int timeout = clientConfig.getTimeout() > 0 ? clientConfig.getTimeout() : ThriftClientConfig.DEFAULT_TIMEOUT;
+        connections = new GenericKeyedObjectPool<>(new TProtocolFactory(true, timeout), config);
     }
 
 
-    /**
-     * 懒构造类
-     */
-    private static class LazyHolder {
-        private static final TProtocolProvider INSTANCE;
-
-        static {
-            GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
-            config.setMaxTotal(MAX_CONN);
-            config.setMaxTotalPerKey(MAX_CONN);
-            config.setMaxIdlePerKey(MAX_CONN);
-            config.setMinIdlePerKey(MIN_CONN);
-            config.setTestOnBorrow(true);
-            config.setMinEvictableIdleTimeMillis(TimeUnit.MINUTES.toMillis(1));
-            config.setSoftMinEvictableIdleTimeMillis(TimeUnit.MINUTES.toMillis(1));
-            config.setJmxEnabled(false);
-
-            INSTANCE = new TProtocolProvider(config);
-        }
+    @PostConstruct
+    private void post() {
+        INSTANCE = this;
     }
 
     public static final TProtocolProvider getInstance() {
-        return LazyHolder.INSTANCE;
+        return INSTANCE;
     }
 
     @Override
@@ -64,8 +63,8 @@ public class TProtocolProvider implements ConnectionProvider {
     }
 
     @Override
-    public void returnConnection(ThriftServerInfo thriftServerInfo, TProtocol transport) {
-        connections.returnObject(thriftServerInfo, transport);
+    public void returnConnection(ThriftServerInfo thriftServerInfo, TProtocol tProtocol) {
+        connections.returnObject(thriftServerInfo, tProtocol);
     }
 
     @Override

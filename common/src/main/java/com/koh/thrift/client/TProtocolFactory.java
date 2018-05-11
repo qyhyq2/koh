@@ -12,14 +12,17 @@ import org.apache.thrift.transport.TTransportException;
 
 public class TProtocolFactory extends BaseKeyedPooledObjectFactory<ThriftServerInfo, TProtocol> {
     private boolean keepAlive;
+    private int timeout;
 
-    public TProtocolFactory(boolean keepAlive) {
+    public TProtocolFactory(boolean keepAlive, int timeout) {
         this.keepAlive = keepAlive;
+        this.timeout = timeout;
     }
 
     @Override
     public TProtocol create(ThriftServerInfo key) throws Exception {
         TSocket tSocket = new TSocket(key.getHost(), key.getPort());
+        tSocket.setTimeout(timeout);
         TTransport tTransport = new TFramedTransport(tSocket);
         tTransport.open();
         return new TCompactProtocol(tTransport);
@@ -57,7 +60,10 @@ public class TProtocolFactory extends BaseKeyedPooledObjectFactory<ThriftServerI
      */
     @Override
     public void destroyObject(ThriftServerInfo key, PooledObject<TProtocol> pooledObject) throws TTransportException {
-        passivateObject(key, pooledObject);
+        if (pooledObject.getObject() != null && pooledObject.getObject().getTransport().isOpen()) {
+            pooledObject.getObject().getTransport().flush();
+            pooledObject.getObject().getTransport().close();
+        }
         pooledObject.markAbandoned();
     }
 

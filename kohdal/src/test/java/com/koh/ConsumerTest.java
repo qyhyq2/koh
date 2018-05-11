@@ -1,7 +1,6 @@
 package com.koh;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-
 import com.koh.thrift.second.SecondService;
 import com.koh.thrift.test.TestService;
 import org.apache.thrift.TException;
@@ -14,7 +13,7 @@ import java.util.concurrent.Executors;
 
 public class ConsumerTest extends AbstractServiceTest {
 
-//    @Reference(loadbalance = "dubboRandom")
+    //    @Reference(loadbalance = "dubboRandom")
     @Reference
     private TestService.Iface testService;
 
@@ -28,7 +27,7 @@ public class ConsumerTest extends AbstractServiceTest {
 
     @Test
     public void test() throws Exception {
-        System.out.println(testService.getById((byte) 1).name);
+        System.out.println(testService.echo("2"));
     }
 
     @Test
@@ -39,17 +38,18 @@ public class ConsumerTest extends AbstractServiceTest {
 
     @Test
     public void testPerm() throws Exception {
-        int max = 10;
+        int max = 1000;
         System.out.println("dubbo RPC testing => ");
-        ExecutorService threadPool = Executors.newFixedThreadPool(50);
+        ExecutorService threadPool = Executors.newFixedThreadPool(30);
         CountDownLatch latch = new CountDownLatch(max);
 
         long start = System.currentTimeMillis();
 
         for (int i = 0; i < max; i++) {
+            int finalI = i;
             threadPool.submit(() -> {
                 try {
-                    testService.getById((byte) 1);
+                    System.out.println(testService.getById(finalI));
                     latch.countDown();
                 } catch (TException e) {
                     e.printStackTrace();
@@ -62,7 +62,7 @@ public class ConsumerTest extends AbstractServiceTest {
         long end = System.currentTimeMillis();
         long elapsedMilliseconds = end - start;
 
-        System.out.println(String.format("%d次RPC调用,共耗时%d毫秒,平均%f/秒", max, elapsedMilliseconds, max / (elapsedMilliseconds / 1000.0F)));
+        System.out.println(String.format("%d次RPC调用,共耗时%d毫秒,平均%f ms/次", max, elapsedMilliseconds, elapsedMilliseconds / (double) max));
     }
 
 }

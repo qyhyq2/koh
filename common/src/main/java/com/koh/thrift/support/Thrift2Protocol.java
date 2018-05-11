@@ -133,9 +133,16 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
         Object proxy;
         try {
             proxy = new ProxyFactory(type, (MethodInterceptor) invocation -> {
-                TProtocol protocol = TProtocolProvider.getInstance().getConnection(ThriftServerInfo.of(url.getAddress()));
-                T thriftClient = (T) constructor.newInstance(protocol);
-                return invocation.getMethod().invoke(thriftClient, invocation.getArguments());
+                ThriftServerInfo serverInfo = ThriftServerInfo.of(url.getAddress());
+                TProtocolProvider tProtocolProvider = TProtocolProvider.getInstance();
+                TProtocol protocol = null;
+                try {
+                    protocol = tProtocolProvider.getConnection(serverInfo);
+                    T thriftClient = (T) constructor.newInstance(protocol);
+                    return invocation.getMethod().invoke(thriftClient, invocation.getArguments());
+                } finally {
+                    tProtocolProvider.returnConnection(serverInfo, protocol);
+                }
             }).getProxy(ClassUtils.getDefaultClassLoader());
             log.info("thrift client opened for service(" + url + ")");
         } catch (Exception e) {

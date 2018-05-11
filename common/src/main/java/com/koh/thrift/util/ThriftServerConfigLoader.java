@@ -1,5 +1,6 @@
 package com.koh.thrift.util;
 
+import com.koh.thrift.client.ThriftClientConfig;
 import com.koh.thrift.support.ThriftConstant;
 import com.koh.thrift.support.thrift.ThriftServerConfig;
 import org.springframework.boot.bind.PropertySourcesPropertyValues;
@@ -13,7 +14,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 public class ThriftServerConfigLoader {
     public static ThriftServerConfig loadThriftServerConfig(ConfigurableEnvironment environment) {
         ThriftServerConfig properties = new ThriftServerConfig();
-        RelaxedDataBinder binder = new RelaxedDataBinder(properties, ThriftConstant.CONFIG_PREFIX);
+        RelaxedDataBinder binder = new RelaxedDataBinder(properties, ThriftConstant.SERVER_CONFIG_PREFIX);
         binder.bind(new PropertySourcesPropertyValues(environment.getPropertySources()));
         return properties;
     }
