@@ -1,13 +1,16 @@
 package com.koh.thrift.test;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.koh.thrift.swift.Data;
+import com.koh.thrift.swift.SubData;
+import com.koh.thrift.swift.TestService;
 import org.apache.thrift.TException;
 
 /**
  * Created by qianyuhang on 2018/5/2.
  */
 @Service(protocol = {"testService"})
-public class TestServiceImpl implements TestService.Iface {
+public class TestServiceImpl implements TestService {
 
     @Override
     public boolean exists(String path) throws TException {

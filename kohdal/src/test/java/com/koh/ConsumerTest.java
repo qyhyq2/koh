@@ -2,7 +2,7 @@ package com.koh;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.koh.thrift.second.SecondService;
-import com.koh.thrift.test.TestService;
+import com.koh.thrift.swift.TestService;
 import org.apache.thrift.TException;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,7 @@ public class ConsumerTest extends AbstractServiceTest {
 
     //    @Reference(loadbalance = "dubboRandom")
     @Reference
-    private TestService.Iface testService;
+    private TestService testService;
 
     @Reference
     private SecondService.Iface secondService;
