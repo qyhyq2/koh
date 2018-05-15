@@ -9,7 +9,7 @@ dubbo:
   registry:
     protocol: zookeeper
     #zookeeper地址
-    address: 192.168.171.36:2181
+    address: 34.214.167.47:2181,34.218.222.177:2181,54.202.149.169:2181
   annotation:
     package: com.koh
   provider:
