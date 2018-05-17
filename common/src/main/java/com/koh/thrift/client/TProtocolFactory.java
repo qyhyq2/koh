@@ -25,7 +25,7 @@ public class TProtocolFactory extends BaseKeyedPooledObjectFactory<ThriftServerI
         TSocket tSocket = new TSocket(key.getHost(), key.getPort());
         tSocket.setTimeout(timeout);
         TTransport tTransport = new TFramedTransport(tSocket);
-        tTransport.open();
+//        tTransport.open();
         return new TCompactProtocol(tTransport);
     }
 
