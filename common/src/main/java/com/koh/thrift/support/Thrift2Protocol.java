@@ -42,7 +42,7 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
         log.info("url => " + url);
 
         // 保证export的幂等性
-        String addr = getAddr(url);
+        String addr = url.getIp() + ":" + url.getPort();
         TServer finalThriftServer;
         TServer thriftServer = serverMap.get(addr);
         if (thriftServer == null) {
@@ -54,7 +54,8 @@ public class Thrift2Protocol extends AbstractProxyProtocol {
                 finalThriftServer.serve();
                 log.info("Thrift server started.");
             }).start();
-        } else {
+        }
+        else {
             finalThriftServer = thriftServer;
         }
 
